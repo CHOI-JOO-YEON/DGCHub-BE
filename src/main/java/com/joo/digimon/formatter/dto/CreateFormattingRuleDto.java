@@ -19,7 +19,7 @@ public class CreateFormattingRuleDto {
     @Size(max = 500, message = "패턴은 500자 이내여야 합니다")
     private String pattern;
 
-    @NotBlank(message = "교체값은 필수입니다")
+    @NotNull(message = "교체값은 필수입니다")
     @Size(max = 500, message = "교체값은 500자 이내여야 합니다")
     private String replacement;
 
