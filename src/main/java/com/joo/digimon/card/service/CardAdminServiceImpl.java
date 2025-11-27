@@ -125,7 +125,7 @@ public class CardAdminServiceImpl implements CardAdminService {
             note.putNote(updateNoteDto);
 
             // releaseDate가 변경되었는지 확인
-            if (oldReleaseDate != null && !oldReleaseDate.equals(note.getReleaseDate())) {
+            if ((oldReleaseDate == null || !oldReleaseDate.equals(note.getReleaseDate())) && updateNoteDto.getReleaseDate() != null) {
                 updateFormatAndCardDates(note);
             }
         }
@@ -147,7 +147,8 @@ public class CardAdminServiceImpl implements CardAdminService {
 
             for (int i = 0; i < allFormats.size(); i++) {
                 Format currentFormat = allFormats.get(i);
-                if (currentFormat.getId().equals(format.getId()) && i > 0) {
+                // 객체 참조로 비교 (JPA 영속성 컨텍스트에서 같은 엔티티는 같은 객체)
+                if (currentFormat == format && i > 0) {
                     // 직전 포맷의 endDate를 현재 포맷의 startDate - 1일로 설정
                     Format previousFormat = allFormats.get(i - 1);
                     previousFormat.updateEndDate(currentFormat.getStartDate().minusDays(1));
