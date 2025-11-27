@@ -1,5 +1,7 @@
 package com.joo.digimon.deck.service;
 
+import com.joo.digimon.card.model.NoteEntity;
+import com.joo.digimon.card.repository.NoteRepository;
 import com.joo.digimon.deck.dto.FormatRequestDto;
 import com.joo.digimon.deck.dto.FormatResponseDto;
 import com.joo.digimon.deck.dto.FormatUpdateRequestDto;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class FormatServiceImpl implements FormatService {
 
     private final FormatRepository formatRepository;
+    private final NoteRepository noteRepository;
 
     @PostConstruct
     @Transactional
@@ -41,12 +44,19 @@ public class FormatServiceImpl implements FormatService {
     @Override
     @Transactional
     public void createFormat(FormatRequestDto formatRequestDto) {
+        // NoteEntity 조회 (선택적)
+        NoteEntity noteEntity = null;
+        if (formatRequestDto.getNoteId() != null) {
+            noteEntity = noteRepository.findById(formatRequestDto.getNoteId()).orElse(null);
+        }
+
         formatRepository.save(
                 Format.builder()
                         .name(formatRequestDto.getFormatName())
                         .startDate(formatRequestDto.getStartDate())
                         .endDate(formatRequestDto.getEndDate())
                         .isOnlyEn(formatRequestDto.getIsOnlyEn())
+                        .noteEntity(noteEntity)
                         .build()
         );
     }
@@ -78,8 +88,17 @@ public class FormatServiceImpl implements FormatService {
     @Transactional
     public void updateFormat(List<FormatUpdateRequestDto> dtos) {
         for (FormatUpdateRequestDto dto : dtos) {
-        Format format = formatRepository.findById(dto.getId()).orElseThrow();
-        format.update(dto);
+            Format format = formatRepository.findById(dto.getId()).orElseThrow();
+            format.update(dto);
+
+            // NoteEntity 연결 업데이트 (선택적)
+            if (dto.getNoteId() != null) {
+                NoteEntity noteEntity = noteRepository.findById(dto.getNoteId()).orElse(null);
+                format.updateNoteEntity(noteEntity);
+            } else {
+                // noteId가 명시적으로 null인 경우 연결 해제
+                format.updateNoteEntity(null);
+            }
         }
     }
 

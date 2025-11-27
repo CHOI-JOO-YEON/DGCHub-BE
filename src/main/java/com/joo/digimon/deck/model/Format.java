@@ -49,4 +49,8 @@ public class Format {
     public void updateEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
+
+    public void updateNoteEntity(NoteEntity noteEntity) {
+        this.noteEntity = noteEntity;
+    }
 }
