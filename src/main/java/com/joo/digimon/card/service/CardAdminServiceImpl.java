@@ -14,6 +14,8 @@ import com.joo.digimon.card.dto.type.TypeDto;
 import com.joo.digimon.card.model.*;
 import com.joo.digimon.card.repository.*;
 import com.joo.digimon.crawling.procedure.save.SaveCardProcedure;
+import com.joo.digimon.deck.model.Format;
+import com.joo.digimon.deck.repository.FormatRepository;
 import com.joo.digimon.global.enums.Attribute;
 import com.joo.digimon.global.enums.Form;
 import com.joo.digimon.global.enums.Locale;
@@ -42,6 +44,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Comparator;
 
 import static com.joo.digimon.image.ImageUtil.convertBufferedImageToWebP;
 
@@ -73,6 +76,7 @@ public class CardAdminServiceImpl implements CardAdminService {
     private final CardRepository cardRepository;
     private final TypeRepository typeRepository;
     private final JapaneseCardRepository japaneseCardRepository;
+    private final FormatRepository formatRepository;
     private final EntityManager entityManager;
     private final ObjectMapper objectMapper;
     private final S3Util s3Util;
@@ -110,14 +114,60 @@ public class CardAdminServiceImpl implements CardAdminService {
     @Transactional
     public List<ResponseNoteDto> putNotes(List<UpdateNoteDto> updateNoteDtoList) {
         for (UpdateNoteDto updateNoteDto : updateNoteDtoList) {
-            Optional<NoteEntity> note = noteRepository.findById(updateNoteDto.getNoteId());
-            if (note.isEmpty()) {
+            Optional<NoteEntity> noteOptional = noteRepository.findById(updateNoteDto.getNoteId());
+            if (noteOptional.isEmpty()) {
                 throw new NoSuchElementException();
             }
-            note.get().putNote(updateNoteDto);
+
+            NoteEntity note = noteOptional.get();
+            java.time.LocalDate oldReleaseDate = note.getReleaseDate();
+
+            note.putNote(updateNoteDto);
+
+            // releaseDate가 변경되었는지 확인
+            if ((oldReleaseDate == null || !oldReleaseDate.equals(note.getReleaseDate())) && updateNoteDto.getReleaseDate() != null) {
+                updateFormatAndCardDates(note);
+            }
         }
 
         return getAllResponseNoteDto();
+    }
+
+    private void updateFormatAndCardDates(NoteEntity noteEntity) {
+        // 1. NoteEntity와 연관된 Format 찾기 및 startDate 업데이트
+        Optional<Format> formatOptional = formatRepository.findByNoteEntity(noteEntity);
+
+        if (formatOptional.isPresent()) {
+            Format format = formatOptional.get();
+            format.updateStartDate(noteEntity.getReleaseDate());
+
+            // 2. 모든 Format을 startDate 기준으로 정렬하여 직전 Format의 endDate 업데이트
+            List<Format> allFormats = formatRepository.findAll();
+            allFormats.sort(Comparator.comparing(Format::getStartDate));
+
+            for (int i = 0; i < allFormats.size(); i++) {
+                Format currentFormat = allFormats.get(i);
+                // 객체 참조로 비교 (JPA 영속성 컨텍스트에서 같은 엔티티는 같은 객체)
+                if (currentFormat == format && i > 0) {
+                    // 직전 포맷의 endDate를 현재 포맷의 startDate - 1일로 설정
+                    Format previousFormat = allFormats.get(i - 1);
+                    previousFormat.updateEndDate(currentFormat.getStartDate().minusDays(1));
+                    break;
+                }
+            }
+        }
+
+        // 3. NoteEntity의 모든 CardImgEntity 중 isParallel = false인 것들의 CardEntity.releaseDate 업데이트
+        if (noteEntity.getCardImgEntities() != null) {
+            noteEntity.getCardImgEntities().stream()
+                    .filter(cardImg -> cardImg.getIsParallel() != null && !cardImg.getIsParallel())
+                    .forEach(cardImg -> {
+                        CardEntity card = cardImg.getCardEntity();
+                        if (card != null) {
+                            card.updateReleaseDate(noteEntity.getReleaseDate());
+                        }
+                    });
+        }
     }
 
     @Transactional

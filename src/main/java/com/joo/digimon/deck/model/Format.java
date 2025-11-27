@@ -1,5 +1,6 @@
 package com.joo.digimon.deck.model;
 
+import com.joo.digimon.card.model.NoteEntity;
 import com.joo.digimon.deck.dto.FormatRequestDto;
 import com.joo.digimon.deck.dto.FormatUpdateRequestDto;
 import jakarta.persistence.*;
@@ -29,11 +30,27 @@ public class Format {
 
     @OneToMany(mappedBy = "format")
     Set<DeckEntity> decks;
-    
+
+    @OneToOne
+    @JoinColumn(name = "note_entity_id")
+    NoteEntity noteEntity;
+
     public void update(FormatUpdateRequestDto dto){
         this.name = dto.getFormatName();
         this.isOnlyEn = dto.getIsOnlyEn();
         this.startDate = dto.getStartDate();
         this.endDate = dto.getEndDate();
+    }
+
+    public void updateStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void updateEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void updateNoteEntity(NoteEntity noteEntity) {
+        this.noteEntity = noteEntity;
     }
 }

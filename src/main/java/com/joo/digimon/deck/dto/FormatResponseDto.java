@@ -12,12 +12,20 @@ public class FormatResponseDto {
     LocalDate startDate;
     LocalDate endDate;
     Boolean isOnlyEn;
+    Integer noteId;
+    String noteName;
 
     public FormatResponseDto(Format format) {
         this.id = format.getId();
         this.formatName = format.getName();
         this.startDate = format.getStartDate();
         this.endDate = format.getEndDate();
-        this.isOnlyEn=format.getIsOnlyEn();
+        this.isOnlyEn = format.getIsOnlyEn();
+
+        // NoteEntity 정보 추가
+        if (format.getNoteEntity() != null) {
+            this.noteId = format.getNoteEntity().getId();
+            this.noteName = format.getNoteEntity().getName();
+        }
     }
 }

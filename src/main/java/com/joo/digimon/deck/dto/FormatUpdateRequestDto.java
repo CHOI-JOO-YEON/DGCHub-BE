@@ -11,4 +11,5 @@ public class FormatUpdateRequestDto {
     LocalDate startDate;
     LocalDate endDate;
     Boolean isOnlyEn;
+    Integer noteId;  // 선택적: NoteEntity 연결 (null이면 연결 해제)
 }

@@ -128,4 +128,8 @@ public class CardEntity {
         digivolveCost2 = dto.getDigivolveCost2();
         digivolveCondition2 = dto.getDigivolveCondition2();
     }
+
+    public void updateReleaseDate(LocalDate releaseDate) {
+        this.releaseDate = releaseDate;
+    }
 }
