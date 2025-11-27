@@ -1,5 +1,6 @@
 package com.joo.digimon.deck.repository;
 
+import com.joo.digimon.card.model.NoteEntity;
 import com.joo.digimon.deck.model.Format;
 import jakarta.persistence.Entity;
 import org.springframework.data.domain.Sort;
@@ -16,4 +17,5 @@ public interface FormatRepository extends JpaRepository<Format,Integer> {
     List<Format> findByEndDateIsAfter(LocalDate localDate, Sort sort);
     Optional<Format> findTopByIsOnlyEnIsNullOrIsOnlyEnIsFalseOrderByStartDateDesc();
     List<Format> findByEndDateGreaterThanEqual(LocalDate latestReleaseCardDate, Sort sort);
+    Optional<Format> findByNoteEntity(NoteEntity noteEntity);
 }

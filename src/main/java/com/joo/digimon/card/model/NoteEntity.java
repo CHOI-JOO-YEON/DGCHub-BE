@@ -37,7 +37,7 @@ public class NoteEntity {
 
     @Column(length = 1000)
     private String description;
-    
+
     private String parent;
 
     @OneToMany(mappedBy = "noteEntity")
@@ -56,9 +56,9 @@ public class NoteEntity {
         this.cardOrigin = dto.getCardOrigin();
         this.priority = dto.getPriority();
         this.isDisable = dto.getIsDisable();
-        
+
         if (dto.getParent() != null) {
-            this.parent = dto.getParent();    
+            this.parent = dto.getParent();
         }
 
         if (dto.getDescription() != null) {
