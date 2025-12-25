@@ -118,10 +118,19 @@ public class JpnCrawlingProcedureV2 implements CrawlingProcedure {
     @Override
     public List<String> getColors() {
         List<String> colors = new ArrayList<>();
-        for (Element span : element.select("dd.cardInfoData.cardColor span")) {
-            String txt = span.text().trim();
-            if (!txt.isEmpty()) colors.add(txt);
+
+        Element dl = element.selectFirst("dl.cardInfoBox:has(dt.cardInfoTit:matches(^Color$))");
+        if (dl == null) {
+            return colors;
         }
+
+        for (Element span : dl.select("dd.cardInfoData.cardColor span")) {
+            String txt = span.text().trim();
+            if (!txt.isEmpty()) {
+                colors.add(txt);
+            }
+        }
+
         return colors;
     }
 

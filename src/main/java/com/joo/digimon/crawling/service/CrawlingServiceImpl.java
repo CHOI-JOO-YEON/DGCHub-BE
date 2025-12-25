@@ -4,10 +4,7 @@ import com.joo.digimon.card.model.*;
 import com.joo.digimon.card.repository.*;
 import com.joo.digimon.crawling.dto.*;
 import com.joo.digimon.crawling.model.CrawlingCardEntity;
-import com.joo.digimon.crawling.procedure.crwaling.EngCrawlingProcedure;
-import com.joo.digimon.crawling.procedure.crwaling.JpnCrawlingProcedure;
-import com.joo.digimon.crawling.procedure.crwaling.JpnCrawlingProcedureV2;
-import com.joo.digimon.crawling.procedure.crwaling.KorCrawlingProcedure;
+import com.joo.digimon.crawling.procedure.crwaling.*;
 import com.joo.digimon.crawling.procedure.img.KorCardImgProcessor;
 import com.joo.digimon.crawling.procedure.img.OtherLocaleCardImgProcessor;
 import com.joo.digimon.crawling.procedure.parse.EngCardParseProcedure;
@@ -91,7 +88,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     private List<CrawlingCardDto> createCrawlingCardDtos(String url, Locale locale, String note) throws IOException {
-        List<Document> documentListByFirstPageUrl = getDocumentListByFirstPageUrl(url);
+        List<Document> documentListByFirstPageUrl = getDocumentListByFirstPageUrl(url, locale);
 
         List<Element> cardElement = new ArrayList<>();
         for (Document document : documentListByFirstPageUrl) {
@@ -134,8 +131,12 @@ public class CrawlingServiceImpl implements CrawlingService {
         return crawlingCardEntities;
     }
 
-    private List<Document> getDocumentListByFirstPageUrl(String url) throws IOException {
+    private List<Document> getDocumentListByFirstPageUrl(String url, Locale locale) throws IOException {
         Document doc = Jsoup.connect(url).get();
+
+        if (locale == Locale.ENG) {
+            return Collections.singletonList(doc);
+        }
         List<Document> documentList = new ArrayList<>();
         documentList.add(doc);
         try {
@@ -154,15 +155,15 @@ public class CrawlingServiceImpl implements CrawlingService {
 
     private List<Element> getCardElementsByDocument(Document document, Locale locale) {
         return switch (locale) {
-            case KOR, ENG-> document.select(".cardlistCol .popup");
-            case JPN -> document.select(".cardlistCol .image_lists_item");
+            case KOR-> document.select(".cardlistCol .popup");
+            case ENG, JPN -> document.select(".cardlistCol .image_lists_item");
         };
     }
 
     private CrawlingCardDto crawlingCardByElement(Element element, Locale locale) {
         return switch (locale) {
             case KOR -> new KorCrawlingProcedure(element).execute();
-            case ENG -> new EngCrawlingProcedure(element).execute();
+            case ENG -> new EngCrawlingProcedureV2(element).execute();
             case JPN -> new JpnCrawlingProcedureV2(element).execute();
         };
     }

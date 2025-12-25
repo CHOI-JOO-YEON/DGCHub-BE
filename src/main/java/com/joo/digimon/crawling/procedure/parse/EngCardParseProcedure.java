@@ -72,6 +72,9 @@ public class EngCardParseProcedure implements CardParseProcedure {
 
     @Override
     public Attribute getAttribute() {
+        if (card.getAttribute() == null) {
+            return null;
+        }
         if (card.getAttribute().equals("-")) {
             return null;
         }
@@ -96,6 +99,9 @@ public class EngCardParseProcedure implements CardParseProcedure {
 
     @Override
     public Integer getDp() {
+        if (card.getDP() == null) {
+            return null;
+        }
         if (card.getDP().equals("-")) {
             return null;
         }
@@ -109,6 +115,10 @@ public class EngCardParseProcedure implements CardParseProcedure {
 
     @Override
     public Integer getPlayCost() {
+        if (card.getPlayCost() == null) {
+            return null;
+        }
+
         if (card.getPlayCost().equals("-")) {
             return null;
         }
@@ -121,6 +131,10 @@ public class EngCardParseProcedure implements CardParseProcedure {
 
     @Override
     public String getEffect() {
+        if (card.getEffect() == null) {
+            return null;
+        }
+
         if (card.getEffect().equals("-")) {
             return null;
         }
@@ -129,6 +143,10 @@ public class EngCardParseProcedure implements CardParseProcedure {
 
     @Override
     public String getSourceEffect() {
+        if (card.getSourceEffect() == null) {
+            return null;
+        }
+
         if (card.getSourceEffect().equals("-")) {
             return null;
         }
