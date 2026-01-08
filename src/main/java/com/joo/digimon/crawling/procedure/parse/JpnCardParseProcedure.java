@@ -208,7 +208,8 @@ public class JpnCardParseProcedure implements CardParseProcedure {
             return new Digivolve(null, null);
         }
         try {
-            int digivolveCondition = Integer.parseInt(digivolveStrings[0].replace("Lv.", ""));
+            int digivolveCondition =
+                    digivolveStrings[0].charAt(digivolveStrings[0].length() - 1) - '0';
             double digivolveDoubleCost = Double.parseDouble(digivolveStrings[1]);
             int digivolveCost = (int) digivolveDoubleCost;
             return new Digivolve(digivolveCost, digivolveCondition);

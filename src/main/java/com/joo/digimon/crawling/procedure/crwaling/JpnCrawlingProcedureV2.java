@@ -75,7 +75,7 @@ public class JpnCrawlingProcedureV2 implements CrawlingProcedure {
 
     @Override
     public String getPlayCost() {
-        return textOfDt("登場コスト");
+        return textOfDt("コスト");
     }
 
     @Override

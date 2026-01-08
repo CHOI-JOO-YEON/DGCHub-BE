@@ -208,7 +208,7 @@ public class EngCardParseProcedure implements CardParseProcedure {
         }
         try {
             int digivolveCondition = Integer.parseInt(digivolveStrings[1].replace("Lv.", ""));
-            double digivolveDoubleCost = Double.parseDouble(digivolveStrings[0]);
+            double digivolveDoubleCost = digivolveStrings[0].charAt(digivolveStrings[0].length() - 1) - '0';
             int digivolveCost = (int) digivolveDoubleCost;
             return new Digivolve(digivolveCost, digivolveCondition);
         } catch (NumberFormatException e) {

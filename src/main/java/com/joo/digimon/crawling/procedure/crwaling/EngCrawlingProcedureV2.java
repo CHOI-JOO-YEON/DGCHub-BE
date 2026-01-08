@@ -75,7 +75,7 @@ public class EngCrawlingProcedureV2 implements CrawlingProcedure {
 
     @Override
     public String getPlayCost() {
-        return textOfDt("登場コスト");
+        return textOfDt("Cost");
     }
 
     @Override
