@@ -41,6 +41,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,8 +67,7 @@ public class CardAdminServiceImpl implements CardAdminService {
     private String prefixUrl;
 
     private static final String localPath = "repo";
-    private static final String cardsPath = localPath + "/assets/data/cards.json";
-    private static final String notesPath = localPath + "/assets/data/notes.json";
+    private static final String dataPath = localPath + "/assets/data";
 
 
     private final CardImgRepository cardImgRepository;
@@ -405,22 +406,37 @@ public class CardAdminServiceImpl implements CardAdminService {
 
             git.checkout().setCreateBranch(true).setName(branchName).call();
 
-            File file = new File(cardsPath);
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
+            // Generate timestamp for versioned filenames
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+            // Ensure data directory exists
+            File dataDir = new File(dataPath);
+            if (!dataDir.exists()) {
+                dataDir.mkdirs();
             }
-            try (FileWriter writer = new FileWriter(file, false)) {
+
+            // Write cards.{timestamp}.json
+            File cardsFile = new File(dataPath + "/cards." + timestamp + ".json");
+            try (FileWriter writer = new FileWriter(cardsFile, false)) {
                 writer.write(getCardsJson());
             }
 
-            file = new File(notesPath);
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
-            }
-            try (FileWriter writer = new FileWriter(file, false)) {
+            // Write notes.{timestamp}.json
+            File notesFile = new File(dataPath + "/notes." + timestamp + ".json");
+            try (FileWriter writer = new FileWriter(notesFile, false)) {
                 writer.write(getNotesJson());
             }
 
+            // Write version.json with timestamp information
+            File versionFile = new File(dataPath + "/version.json");
+            try (FileWriter writer = new FileWriter(versionFile, false)) {
+                String versionJson = String.format(
+                    "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\"\n}",
+                    timestamp,
+                    timestamp
+                );
+                writer.write(versionJson);
+            }
 
             git.add()
                     .addFilepattern(".")
