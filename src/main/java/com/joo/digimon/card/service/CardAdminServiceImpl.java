@@ -68,6 +68,7 @@ public class CardAdminServiceImpl implements CardAdminService {
 
     private static final String localPath = "repo";
     private static final String dataPath = localPath + "/assets/data";
+    private static final String webPath = localPath + "/web";
 
 
     private final CardImgRepository cardImgRepository;
@@ -415,6 +416,12 @@ public class CardAdminServiceImpl implements CardAdminService {
                 dataDir.mkdirs();
             }
 
+            // Ensure web directory exists
+            File webDir = new File(webPath);
+            if (!webDir.exists()) {
+                webDir.mkdirs();
+            }
+
             // Write cards.{timestamp}.json
             File cardsFile = new File(dataPath + "/cards." + timestamp + ".json");
             try (FileWriter writer = new FileWriter(cardsFile, false)) {
@@ -427,8 +434,8 @@ public class CardAdminServiceImpl implements CardAdminService {
                 writer.write(getNotesJson());
             }
 
-            // Write version.json with timestamp information
-            File versionFile = new File(dataPath + "/version.json");
+            // Write version.json to web directory (no-cache asset)
+            File versionFile = new File(webPath + "/version.json");
             try (FileWriter writer = new FileWriter(versionFile, false)) {
                 String versionJson = String.format(
                     "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\"\n}",
