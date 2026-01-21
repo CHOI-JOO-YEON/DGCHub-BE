@@ -183,6 +183,12 @@ public class CardAdminController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/card/simple-data")
+    ResponseEntity<?> getSimpleData() {
+        var data = cardAdminService.getAllSimpleData();
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
+
     
 
 

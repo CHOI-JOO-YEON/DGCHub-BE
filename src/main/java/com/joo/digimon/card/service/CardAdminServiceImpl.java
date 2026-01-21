@@ -3,6 +3,7 @@ package com.joo.digimon.card.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.joo.digimon.card.dto.SimpleCardData;
 import com.joo.digimon.card.dto.card.CardAdminPutDto;
 import com.joo.digimon.card.dto.card.CardVo;
 import com.joo.digimon.card.dto.card.TraitDto;
@@ -438,9 +439,9 @@ public class CardAdminServiceImpl implements CardAdminService {
             File versionFile = new File(webPath + "/version.json");
             try (FileWriter writer = new FileWriter(versionFile, false)) {
                 String versionJson = String.format(
-                    "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\"\n}",
-                    timestamp,
-                    timestamp
+                        "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\"\n}",
+                        timestamp,
+                        timestamp
                 );
                 writer.write(versionJson);
             }
@@ -650,6 +651,17 @@ public class CardAdminServiceImpl implements CardAdminService {
 
         typeRepository.save(typeEntity);
         return true;
+    }
+
+    @Override
+    public List<SimpleCardData> getAllSimpleData() {
+        List<CardImgEntity> cardImgEntities = cardImgRepository.findAll();
+
+        return cardImgEntities
+                .stream()
+                .filter(c -> c.getIsParallel() != true)
+                .map(c -> new SimpleCardData(c, prefixUrl))
+                .toList();
     }
 
     public String uploadCardImage(CardAdminPutDto dto, MultipartFile image) throws IOException {

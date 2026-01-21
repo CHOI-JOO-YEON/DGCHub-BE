@@ -1,5 +1,6 @@
 package com.joo.digimon.card.service;
 
+import com.joo.digimon.card.dto.SimpleCardData;
 import com.joo.digimon.card.dto.card.CardAdminPutDto;
 import com.joo.digimon.card.dto.card.TraitDto;
 import com.joo.digimon.card.dto.card.TypeMergeRequestDto;
@@ -7,7 +8,6 @@ import com.joo.digimon.card.dto.note.CreateNoteDto;
 import com.joo.digimon.card.dto.note.ResponseNoteDto;
 import com.joo.digimon.card.dto.note.UpdateNoteDto;
 import com.joo.digimon.card.dto.type.TypeDto;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,4 +47,6 @@ public interface CardAdminService {
     Boolean updateSampleCardImage(CardAdminPutDto cardAdminPutDto, MultipartFile image) throws IOException;
 
     Boolean createType(String name);
+
+    List<SimpleCardData> getAllSimpleData();
 }

@@ -45,7 +45,7 @@ public class KorCardParseProcedure implements CardParseProcedure{
             return -1;
         }
         String replace = card.getLv().replace("Lv.", "");
-        if (replace.equals("-")) {
+        if (replace.equals("-") || replace.equals("‐")) {
             return 0;
         }
         return Integer.parseInt(replace);
