@@ -2,6 +2,8 @@ package com.joo.digimon.card.repository;
 
 import com.joo.digimon.card.model.CardEntity;
 import com.joo.digimon.global.enums.CardType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,6 @@ public interface CardRepository extends JpaRepository<CardEntity,Integer>{
     List<CardEntity> findByCardTypeAndIsOnlyEnCardIsNullOrIsOnlyEnCardIsFalse(CardType cardType);
 
     List<CardEntity> findByCardNoIn(Collection<String> cardNos);
+
+    Page<CardEntity> findAll(Pageable pageable);
 }

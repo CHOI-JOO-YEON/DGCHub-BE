@@ -189,7 +189,19 @@ public class CardAdminController {
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
-    
+    @GetMapping("/card/text-formatting/preview")
+    ResponseEntity<?> getTextFormattingPreview(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        var data = cardAdminService.getTextFormattingPreview(page, size);
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
+
+    @PostMapping("/card/text-formatting/apply")
+    ResponseEntity<?> applyTextFormatting(@RequestBody List<Integer> cardIds) {
+        cardAdminService.applyTextFormatting(cardIds);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 
 }

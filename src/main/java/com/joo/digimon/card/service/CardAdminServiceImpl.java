@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.joo.digimon.card.dto.SimpleCardData;
 import com.joo.digimon.card.dto.card.CardAdminPutDto;
 import com.joo.digimon.card.dto.card.CardVo;
+import com.joo.digimon.card.dto.card.TextFormatPreviewDto;
 import com.joo.digimon.card.dto.card.TraitDto;
 import com.joo.digimon.card.dto.card.TypeMergeRequestDto;
 import com.joo.digimon.card.dto.note.CreateNoteDto;
@@ -22,6 +23,7 @@ import com.joo.digimon.global.enums.Form;
 import com.joo.digimon.global.enums.Locale;
 import com.joo.digimon.global.exception.model.CanNotDeleteException;
 import com.joo.digimon.util.S3Util;
+import com.joo.digimon.util.TextFormattingUtil;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -32,6 +34,9 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -662,6 +667,82 @@ public class CardAdminServiceImpl implements CardAdminService {
                 .filter(c -> c.getIsParallel() != true)
                 .map(c -> new SimpleCardData(c, prefixUrl))
                 .toList();
+    }
+
+    @Override
+    public List<TextFormatPreviewDto> getTextFormattingPreview(int page, int size) {
+        // 전체 카드 조회 후 필터링
+        List<CardEntity> allCards = cardRepository.findAll();
+
+        // 패턴이 있고 변경이 필요한 카드만 필터링하여 미리보기 생성
+        List<TextFormatPreviewDto> allPreviews = allCards.stream()
+                .filter(card ->
+                    TextFormattingUtil.hasFormattingPatterns(card.getEffect()) ||
+                    TextFormattingUtil.hasFormattingPatterns(card.getSourceEffect())
+                )
+                .map(this::createFormatPreview)
+                .filter(preview -> preview.getHasChanges())
+                .sorted(Comparator.comparing(TextFormatPreviewDto::getCardNo))
+                .toList();
+
+        // 필터링된 결과를 페이지네이션하여 반환
+        int start = page * size;
+        int end = Math.min(start + size, allPreviews.size());
+
+        if (start >= allPreviews.size()) {
+            return List.of();
+        }
+
+        return allPreviews.subList(start, end);
+    }
+
+    private TextFormatPreviewDto createFormatPreview(CardEntity card) {
+        String originalEffect = card.getEffect() != null ? card.getEffect() : "";
+        String originalSourceEffect = card.getSourceEffect() != null ? card.getSourceEffect() : "";
+
+        String formattedEffect = TextFormattingUtil.applyTextFormatting(originalEffect);
+        String formattedSourceEffect = TextFormattingUtil.applyTextFormatting(originalSourceEffect);
+
+        boolean effectChanged = !originalEffect.equals(formattedEffect);
+        boolean sourceEffectChanged = !originalSourceEffect.equals(formattedSourceEffect);
+        boolean hasChanges = effectChanged || sourceEffectChanged;
+
+        return new TextFormatPreviewDto(
+                card.getId(),
+                card.getCardNo(),
+                card.getCardName(),
+                hasChanges,
+                effectChanged,
+                sourceEffectChanged,
+                originalEffect,
+                formattedEffect,
+                originalSourceEffect,
+                formattedSourceEffect
+        );
+    }
+
+    @Override
+    @Transactional
+    public void applyTextFormatting(List<Integer> cardIds) {
+        if (cardIds == null || cardIds.isEmpty()) {
+            return;
+        }
+
+        List<CardEntity> cards = cardRepository.findAllById(cardIds);
+
+        for (CardEntity card : cards) {
+            if (card.getEffect() != null) {
+                String formattedEffect = TextFormattingUtil.applyTextFormatting(card.getEffect());
+                card.updateEffect(formattedEffect);
+            }
+
+            if (card.getSourceEffect() != null) {
+                String formattedSourceEffect = TextFormattingUtil.applyTextFormatting(card.getSourceEffect());
+                card.updateSourceEffect(formattedSourceEffect);
+            }
+        }
+
+        cardRepository.saveAll(cards);
     }
 
     public String uploadCardImage(CardAdminPutDto dto, MultipartFile image) throws IOException {

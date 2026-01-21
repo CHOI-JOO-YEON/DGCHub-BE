@@ -39,26 +39,31 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleIllegalArgumentException(Exception e) {
+        e.printStackTrace();
     }
 
     @ExceptionHandler(ClientAbortException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void handleClientAbortException() {
+    public void handleClientAbortException(Exception e) {
+        e.printStackTrace();
     }
     
     @ExceptionHandler(CanNotDeleteException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleCanNotDeleteException(Exception e) {
+        e.printStackTrace();
     }
 
     @ExceptionHandler(HttpMessageConversionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleHttpMessageConversionException(Exception e) {
+        e.printStackTrace();
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleConstraintViolationException(Exception e) {
+        e.printStackTrace();
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
