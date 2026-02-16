@@ -38,9 +38,15 @@ public class AccountController {
         return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
     }
     @PostMapping("/logout")
-    public ResponseEntity<?> logout( HttpServletResponse response) {
-        // 두 쿠키 모두 삭제
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // 일반 유저 로그아웃: JWT_TOKEN만 삭제
         invalidateTokenCookie(response);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/logout/admin")
+    public ResponseEntity<?> logoutAdmin(HttpServletResponse response) {
+        // 관리자 로그아웃: ADMIN_JWT_TOKEN만 삭제
         invalidateAdminTokenCookie(response);
         return new ResponseEntity<>(HttpStatus.OK);
     }

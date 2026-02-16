@@ -53,7 +53,8 @@ public class JwtFilter extends OncePerRequestFilter {
         // 관리자 전용 엔드포인트 패턴
         return requestURI.startsWith("/api/admin") ||
                requestURI.startsWith("/api/card/admin") ||
-               requestURI.equals("/api/account/login/username");
+               requestURI.equals("/api/account/login/username") ||
+               requestURI.equals("/api/account/logout/admin");
     }
 
     private String extractToken(HttpServletRequest request) {
