@@ -27,18 +27,33 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-//        String token = extractToken(request);
-        String token = jwtProvider.getJwtFromCookie(request);
+        // 요청 URI에 따라 적절한 쿠키 선택
+        String requestURI = request.getRequestURI();
+        String token = null;
+
+        // 관리자 전용 엔드포인트는 ADMIN_JWT_TOKEN만 확인
+        if (isAdminEndpoint(requestURI)) {
+            token = jwtProvider.getAdminJwtFromCookie(request);
+        } else {
+            // 일반 엔드포인트는 JWT_TOKEN 확인
+            token = jwtProvider.getJwtFromCookie(request);
+        }
+
         if (token != null ) {
             try {
                 Authentication auth = getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (JwtException | IllegalArgumentException ignore) {
             }
-
-
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isAdminEndpoint(String requestURI) {
+        // 관리자 전용 엔드포인트 패턴
+        return requestURI.startsWith("/api/admin") ||
+               requestURI.startsWith("/api/card/admin") ||
+               requestURI.equals("/api/account/login/username");
     }
 
     private String extractToken(HttpServletRequest request) {

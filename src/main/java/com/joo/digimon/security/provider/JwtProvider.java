@@ -79,6 +79,15 @@ public class JwtProvider {
                 if ("JWT_TOKEN".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
+            }
+        }
+        return null;
+    }
+
+    public String getAdminJwtFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
                 // ID/PW 로그인용 쿠키 (관리자)
                 if ("ADMIN_JWT_TOKEN".equals(cookie.getName())) {
                     return cookie.getValue();

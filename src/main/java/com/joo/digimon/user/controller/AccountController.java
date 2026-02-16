@@ -25,6 +25,7 @@ public class AccountController {
     @GetMapping("/token/kakao")
     public ResponseEntity<?> getKakaoToken(@NotBlank @RequestParam(name = "code") String code, HttpServletResponse response) throws IOException {
         LoginResponseDto loginResponseDto = userService.getKakaoToken(code);
+        // 일반 유저는 쿠키 기반 인증
         setTokenCookie(response, loginResponseDto);
         return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
     }
@@ -32,11 +33,13 @@ public class AccountController {
     @PostMapping("/login/username")
     public ResponseEntity<?> loginUsername(@RequestBody UsernameLoginRequestDto usernameLoginRequestDto, HttpServletResponse response) throws IOException {
         LoginResponseDto loginResponseDto = userService.usernameLogin(usernameLoginRequestDto);
+        // 관리자도 HttpOnly 쿠키 사용 (XSS 방어)
         setAdminTokenCookie(response, loginResponseDto);
         return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
     }
     @PostMapping("/logout")
     public ResponseEntity<?> logout( HttpServletResponse response) {
+        // 두 쿠키 모두 삭제
         invalidateTokenCookie(response);
         invalidateAdminTokenCookie(response);
         return new ResponseEntity<>(HttpStatus.OK);
