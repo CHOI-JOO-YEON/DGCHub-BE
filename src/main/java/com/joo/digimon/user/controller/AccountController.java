@@ -32,12 +32,13 @@ public class AccountController {
     @PostMapping("/login/username")
     public ResponseEntity<?> loginUsername(@RequestBody UsernameLoginRequestDto usernameLoginRequestDto, HttpServletResponse response) throws IOException {
         LoginResponseDto loginResponseDto = userService.usernameLogin(usernameLoginRequestDto);
-        setTokenCookie(response, loginResponseDto);
+        setAdminTokenCookie(response, loginResponseDto);
         return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
     }
     @PostMapping("/logout")
     public ResponseEntity<?> logout( HttpServletResponse response) {
         invalidateTokenCookie(response);
+        invalidateAdminTokenCookie(response);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -49,8 +50,24 @@ public class AccountController {
         response.addCookie(jwtCookie);
     }
 
+    private static void setAdminTokenCookie(HttpServletResponse response, LoginResponseDto loginResponseDto) {
+        Cookie jwtCookie = new Cookie("ADMIN_JWT_TOKEN", loginResponseDto.getAccessToken());
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setMaxAge(60 * 60 * 24);
+        jwtCookie.setPath("/");
+        response.addCookie(jwtCookie);
+    }
+
     private static void invalidateTokenCookie(HttpServletResponse response) {
         Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setMaxAge(0);
+        jwtCookie.setPath("/");
+        response.addCookie(jwtCookie);
+    }
+
+    private static void invalidateAdminTokenCookie(HttpServletResponse response) {
+        Cookie jwtCookie = new Cookie("ADMIN_JWT_TOKEN", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setMaxAge(0);
         jwtCookie.setPath("/");

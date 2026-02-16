@@ -75,7 +75,12 @@ public class JwtProvider {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
+                // OAuth 로그인용 쿠키 (일반 유저)
                 if ("JWT_TOKEN".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+                // ID/PW 로그인용 쿠키 (관리자)
+                if ("ADMIN_JWT_TOKEN".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
