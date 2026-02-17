@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.joo.digimon.card.dto.SimpleCardData;
 import com.joo.digimon.card.dto.card.CardAdminPutDto;
+import com.joo.digimon.card.dto.card.CardJsonResponseDto;
 import com.joo.digimon.card.dto.card.CardVo;
 import com.joo.digimon.card.dto.card.TextFormatPreviewDto;
 import com.joo.digimon.card.dto.card.TraitDto;
@@ -19,6 +20,7 @@ import com.joo.digimon.crawling.procedure.save.SaveCardProcedure;
 import com.joo.digimon.deck.model.Format;
 import com.joo.digimon.deck.repository.FormatRepository;
 import com.joo.digimon.global.enums.Attribute;
+import com.joo.digimon.global.enums.Color;
 import com.joo.digimon.global.enums.Form;
 import com.joo.digimon.global.enums.Locale;
 import com.joo.digimon.global.exception.model.CanNotDeleteException;
@@ -768,6 +770,143 @@ public class CardAdminServiceImpl implements CardAdminService {
         s3Util.uploadImageToS3(key, webpBytes, "webp");
 
         return key;
+    }
+
+    @Override
+    public String generateCardJson(String prefix, String color, Integer startNumber, Integer endNumber) throws Exception {
+        List<CardEntity> cards;
+
+        // 프로모 카드인 경우 (번호 구간으로 검색) - 개선: Fetch Join으로 한 번에 조회
+        if (startNumber != null && endNumber != null) {
+            List<String> cardNos = new ArrayList<>();
+            for (int i = startNumber; i <= endNumber; i++) {
+                cardNos.add(prefix + "-" + String.format("%03d", i));
+            }
+            cards = cardRepository.findByCardNoInWithTypes(cardNos);
+        }
+        // 일반 카드인 경우 (색상으로 검색) - 개선: Fetch Join으로 DB에서 필터링
+        else if (color != null) {
+            Color colorEnum = Color.getColorByString(color);
+            if (colorEnum == null || colorEnum == Color.ERROR) {
+                throw new IllegalArgumentException("유효하지 않은 색상입니다: " + color);
+            }
+
+            cards = cardRepository.findByPrefixAndColor(prefix, colorEnum);
+        } else {
+            throw new IllegalArgumentException("색상 또는 번호 구간을 입력해주세요");
+        }
+
+        if (cards.isEmpty()) {
+            throw new NoSuchElementException("해당 조건의 카드를 찾을 수 없습니다");
+        }
+
+        // 카드를 JSON으로 변환
+        Map<String, CardJsonResponseDto> cardJsonMap = new LinkedHashMap<>();
+
+        for (CardEntity card : cards) {
+            CardJsonResponseDto cardJson = convertToCardJson(card);
+            cardJsonMap.put(card.getCardNo(), cardJson);
+        }
+
+        // JSON 문자열 생성
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper.writeValueAsString(cardJsonMap);
+    }
+
+    private CardJsonResponseDto convertToCardJson(CardEntity card) {
+        // 색상 리스트 생성
+        List<String> colors = new ArrayList<>();
+        if (card.getColor1() != null && card.getColor1() != Color.ERROR) {
+            colors.add(capitalizeFirst(card.getColor1().name()));
+        }
+        if (card.getColor2() != null && card.getColor2() != Color.ERROR) {
+            colors.add(capitalizeFirst(card.getColor2().name()));
+        }
+        if (card.getColor3() != null && card.getColor3() != Color.ERROR) {
+            colors.add(capitalizeFirst(card.getColor3().name()));
+        }
+
+        // 진화 조건 리스트 생성
+        List<CardJsonResponseDto.DigivolveCondition> digivolveConditions = new ArrayList<>();
+        if (card.getDigivolveCost1() != null && card.getDigivolveCondition1() != null) {
+            digivolveConditions.add(CardJsonResponseDto.DigivolveCondition.builder()
+                    .cost(card.getDigivolveCost1())
+                    .level(card.getDigivolveCondition1())
+                    .color("")
+                    .build());
+        }
+        if (card.getDigivolveCost2() != null && card.getDigivolveCondition2() != null) {
+            digivolveConditions.add(CardJsonResponseDto.DigivolveCondition.builder()
+                    .cost(card.getDigivolveCost2())
+                    .level(card.getDigivolveCondition2())
+                    .color("")
+                    .build());
+        }
+
+        // 타입 생성 (형 제거)
+        String type = null;
+        if (card.getCardCombineTypeEntities() != null && !card.getCardCombineTypeEntities().isEmpty()) {
+            type = card.getCardCombineTypeEntities().stream()
+                    .map(ct -> ct.getTypeEntity().getName())
+                    .collect(Collectors.joining("/"));
+        }
+
+        // 효과 배열 생성
+        List<CardJsonResponseDto.Effect> effects = new ArrayList<>();
+
+        // 메인 효과 (is_inherited: false)
+        if (card.getEffect() != null && !card.getEffect().isEmpty()) {
+            effects.add(CardJsonResponseDto.Effect.builder()
+                    .isInherited(false)
+                    .text(card.getEffect())
+                    .build());
+        }
+
+        // 진화원 효과 (조건에 따라 is_inherited 결정)
+        if (card.getSourceEffect() != null && !card.getSourceEffect().isEmpty()) {
+            boolean isInherited = !containsSecurityOrLink(card.getSourceEffect());
+            effects.add(CardJsonResponseDto.Effect.builder()
+                    .isInherited(isInherited)
+                    .text(card.getSourceEffect())
+                    .build());
+        }
+
+        return CardJsonResponseDto.builder()
+                .name(card.getCardName())
+                .form(card.getForm() != null ? card.getForm().getKor() : null)
+                .level(card.getLv())
+                .color(colors.isEmpty() ? null : colors)
+                .attribute(card.getAttribute() != null ? card.getAttribute().getKor() : null)
+                .rarity(card.getRarity() != null ? card.getRarity().name() : null)
+                .cardType(card.getCardType() != null ? capitalizeFirst(card.getCardType().name()) : null)
+                .playCost(card.getPlayCost())
+                .type(type)
+                .dp(card.getDp())
+                .digivolveConditions(digivolveConditions.isEmpty() ? null : digivolveConditions)
+                .effects(effects.isEmpty() ? null : effects)
+                .build();
+    }
+
+    private String capitalizeFirst(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
+
+    /**
+     * 텍스트에 【시큐리티】 또는 '링크:', '링크 :' 가 포함되어 있는지 확인
+     * @param text 검사할 텍스트
+     * @return 포함되어 있으면 true, 아니면 false
+     */
+    private boolean containsSecurityOrLink(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+        return text.contains("【시큐리티】") ||
+               text.contains("링크:") ||
+               text.contains("링크 :");
     }
 
 }

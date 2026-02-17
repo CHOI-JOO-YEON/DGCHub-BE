@@ -2,6 +2,7 @@ package com.joo.digimon.card.controller;
 
 
 import com.joo.digimon.card.dto.card.CardAdminPutDto;
+import com.joo.digimon.card.dto.card.CardJsonDownloadRequestDto;
 import com.joo.digimon.card.dto.card.CardSearchRequestDto;
 import com.joo.digimon.card.dto.card.TypeMergeRequestDto;
 import com.joo.digimon.card.dto.note.CreateNoteDto;
@@ -15,16 +16,19 @@ import com.joo.digimon.deck.service.FormatService;
 import com.joo.digimon.limit.dto.LimitPutRequestDto;
 import com.joo.digimon.limit.service.LimitService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping({"/api/admin", "/admin-api/admin"})  // 두 경로 모두 지원
 @RequiredArgsConstructor
 public class CardAdminController {
 
@@ -201,6 +205,37 @@ public class CardAdminController {
     ResponseEntity<?> applyTextFormatting(@RequestBody List<Integer> cardIds) {
         cardAdminService.applyTextFormatting(cardIds);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/card/download-json")
+    ResponseEntity<byte[]> downloadCardJson(@ModelAttribute CardJsonDownloadRequestDto requestDto) {
+        try {
+            String jsonContent = cardAdminService.generateCardJson(
+                    requestDto.getPrefix(),
+                    requestDto.getColor(),
+                    requestDto.getStartNumber(),
+                    requestDto.getEndNumber()
+            );
+
+            // 파일명 생성
+            String filename;
+            if (requestDto.getStartNumber() != null && requestDto.getEndNumber() != null) {
+                filename = requestDto.getPrefix() + "_" + requestDto.getStartNumber() + "-" + requestDto.getEndNumber() + ".json";
+            } else {
+                filename = requestDto.getPrefix() + "_" + requestDto.getColor() + ".json";
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentDispositionFormData("attachment", filename);
+
+            byte[] jsonBytes = jsonContent.getBytes(StandardCharsets.UTF_8);
+
+            return new ResponseEntity<>(jsonBytes, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

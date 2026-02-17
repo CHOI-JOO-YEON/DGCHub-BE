@@ -54,4 +54,6 @@ public interface CardAdminService {
     List<TextFormatPreviewDto> getTextFormattingPreview(int page, int size);
 
     void applyTextFormatting(List<Integer> cardIds);
+
+    String generateCardJson(String prefix, String color, Integer startNumber, Integer endNumber) throws Exception;
 }

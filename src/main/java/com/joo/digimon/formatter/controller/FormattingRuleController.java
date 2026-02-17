@@ -17,7 +17,7 @@ import java.util.List;
  * 포맷팅 규칙 관리 Controller (Admin 전용)
  */
 @RestController
-@RequestMapping("/api/admin/formatting-rules")
+@RequestMapping({"/api/admin/formatting-rules", "/admin-api/admin/formatting-rules"})  // 두 경로 모두 지원
 @RequiredArgsConstructor
 public class FormattingRuleController {
 

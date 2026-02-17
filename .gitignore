@@ -38,3 +38,4 @@ out/
 minio_data
 wiremock
 localstack_data
+data

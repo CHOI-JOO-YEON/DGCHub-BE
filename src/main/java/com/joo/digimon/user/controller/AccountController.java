@@ -53,7 +53,7 @@ public class AccountController {
         Cookie jwtCookie = new Cookie("JWT_TOKEN", loginResponseDto.getAccessToken());
         jwtCookie.setHttpOnly(true);
         jwtCookie.setMaxAge(60 * 60 * 24);
-        jwtCookie.setPath("/");
+        jwtCookie.setPath("/api");  // 일반 유저: /api 경로에서만 전송
         response.addCookie(jwtCookie);
     }
 
@@ -61,7 +61,7 @@ public class AccountController {
         Cookie jwtCookie = new Cookie("ADMIN_JWT_TOKEN", loginResponseDto.getAccessToken());
         jwtCookie.setHttpOnly(true);
         jwtCookie.setMaxAge(60 * 60 * 24);
-        jwtCookie.setPath("/");
+        jwtCookie.setPath("/admin-api");  // 관리자: /admin-api 경로에서만 전송
         response.addCookie(jwtCookie);
     }
 
@@ -69,7 +69,7 @@ public class AccountController {
         Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setMaxAge(0);
-        jwtCookie.setPath("/");
+        jwtCookie.setPath("/api");  // 삭제 시에도 같은 path 필요
         response.addCookie(jwtCookie);
     }
 
@@ -77,7 +77,7 @@ public class AccountController {
         Cookie jwtCookie = new Cookie("ADMIN_JWT_TOKEN", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setMaxAge(0);
-        jwtCookie.setPath("/");
+        jwtCookie.setPath("/admin-api");  // 삭제 시에도 같은 path 필요
         response.addCookie(jwtCookie);
     }
 

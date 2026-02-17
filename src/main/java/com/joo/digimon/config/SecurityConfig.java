@@ -49,6 +49,13 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> {})
                 .authorizeHttpRequests(
                         request -> request
+                                // 관리자 전용 경로 (쿠키 path 기반 분리)
+                                .requestMatchers("/admin-api/account/**").permitAll()  // 로그인/로그아웃
+                                .requestMatchers("/admin-api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/admin-api/user/**").hasRole("ADMIN")
+                                .requestMatchers("/admin-api/**").hasRole("ADMIN")  // 기타 모든 /admin-api
+
+                                // 기존 일반 유저 경로
                                 .requestMatchers("/api/crawling/**").hasRole("ADMIN")
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/format/**").hasRole("ADMIN")
@@ -93,6 +100,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("http://localhost:9999");
         configuration.addAllowedOriginPattern("http://localhost:50000");
+        configuration.addAllowedOriginPattern("http://localhost:3000");
         configuration.addAllowedOriginPattern("https://digimon-meta.site");
         configuration.addAllowedOriginPattern("https://dgchub.com");
         configuration.addAllowedOriginPattern("https://admin.dgchub.com");
