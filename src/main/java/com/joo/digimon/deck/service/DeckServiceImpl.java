@@ -262,9 +262,9 @@ public class DeckServiceImpl implements DeckService {
     public PagedResponseDeckDto findDecks(DeckSearchParameter deckSearchParameter, User user) {
         BooleanBuilder builder = getBuilderByDeckSearchParameter(deckSearchParameter);
         QDeckEntity qDeckEntity = QDeckEntity.deckEntity;
-        
-        if(user == null || user.getRole().equals(Role.USER)) {
-            builder.and(qDeckEntity.isPublic.eq(true));    
+
+        if(user == null || !user.getRole().equals(Role.ADMIN)) {
+            builder.and(qDeckEntity.isPublic.eq(true));
         }
 
         if (deckSearchParameter.getFormatId() != null) {
