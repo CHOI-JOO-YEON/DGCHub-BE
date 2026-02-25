@@ -53,10 +53,11 @@ public class SecurityConfig {
                                 .requestMatchers("/admin-api/account/**").permitAll()  // 로그인/로그아웃
                                 .requestMatchers("/admin-api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/admin-api/user/**").hasRole("ADMIN")
+                                .requestMatchers("/admin-api/crawling/**").hasRole("ADMIN")
                                 .requestMatchers("/admin-api/**").hasRole("ADMIN")  // 기타 모든 /admin-api
 
                                 // 기존 일반 유저 경로
-                                .requestMatchers("/api/crawling/**").hasRole("ADMIN")
+                                
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/format/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/format/**").permitAll()

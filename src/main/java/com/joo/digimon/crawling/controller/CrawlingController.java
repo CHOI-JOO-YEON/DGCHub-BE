@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/crawling")
+@RequestMapping("/admin-api//crawling")
 @RequiredArgsConstructor
 public class CrawlingController {
     private final CrawlingService crawlingService;
