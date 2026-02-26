@@ -9,7 +9,7 @@ public class TextFormattingUtil {
      * 3. Remove empty lines
      * 4. Add line break after 》, ., digit before 【, [, 《 (even with space between)
      *    - Exception: digits inside 《》 brackets should not trigger line breaks
-     * 5. Add line break before lines starting with "디지크로스" or "〈룰〉"
+     * 5. Add line break before "디지크로스" followed by "-숫자:" pattern; normalize whitespace (공백 정규화)
      * 6. Add line break after () following 》 if followed by 【, [
      */
     public static String applyTextFormatting(String text) {
@@ -36,8 +36,9 @@ public class TextFormattingUtil {
         // After digit followed by 【, [, 《 (with optional space) - except inside 《》
         formatted = addLineBreakAfterDigit(formatted);
 
-        // Rule 5: Add line break before "디지크로스" or "〈룰〉" if not at start
-        formatted = formatted.replaceAll("(?<!^)(?<!\\n)(디지크로스)", "\n$1");
+        // Rule 5: Add line break before "디지크로스" followed by "-숫자:" pattern if not at start
+        // Also normalize whitespace: "디지크로스-2:" or "디지크로스 -2:" → "\n디지크로스 -$1:"
+        formatted = formatted.replaceAll("(?<!^)(?<!\\n)디지크로스\\s?-\\s?(\\d+)\\s?:", "\n디지크로스 -$1:");
         formatted = formatted.replaceAll("(?<!^)(?<!\\n)(〈룰〉)", "\n$1");
 
         // Rule 6: Add line break after () following 》 if followed by 【, [
