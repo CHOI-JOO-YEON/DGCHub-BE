@@ -61,6 +61,9 @@ public class TokenAdminServiceImpl implements TokenAdminService {
                 .color1(dto.getColor1())
                 .color2(dto.getColor2())
                 .color3(dto.getColor3())
+                .form(dto.getForm())
+                .attribute(dto.getAttribute())
+                .types(dto.getTypes() != null ? String.join(",", dto.getTypes()) : null)
                 .korName(dto.getKorName())
                 .engName(dto.getEngName())
                 .jpnName(dto.getJpnName())
@@ -134,6 +137,15 @@ public class TokenAdminServiceImpl implements TokenAdminService {
         }
         if (dto.getJpnSourceEffect() != null) {
             tokenEntity.updateJpnSourceEffect(dto.getJpnSourceEffect());
+        }
+        if (dto.getForm() != null) {
+            tokenEntity.updateForm(dto.getForm());
+        }
+        if (dto.getAttribute() != null) {
+            tokenEntity.updateAttribute(dto.getAttribute());
+        }
+        if (dto.getTypes() != null) {
+            tokenEntity.updateTypes(String.join(",", dto.getTypes()));
         }
 
         tokenRepository.save(tokenEntity);

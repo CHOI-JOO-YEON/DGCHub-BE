@@ -3,8 +3,10 @@ package com.joo.digimon.card.dto.token;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.joo.digimon.card.dto.card.LocaleCardData;
 import com.joo.digimon.card.model.TokenEntity;
+import com.joo.digimon.global.enums.Attribute;
 import com.joo.digimon.global.enums.CardType;
 import com.joo.digimon.global.enums.Color;
+import com.joo.digimon.global.enums.Form;
 import com.joo.digimon.global.enums.Locale;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -30,6 +33,9 @@ public class TokenVo {
     Color color1;
     Color color2;
     Color color3;
+    Form form;
+    String attribute;
+    List<String> types;
     List<LocaleCardData> localeCardData;
 
     public TokenVo(TokenEntity tokenEntity, String prefixUrl) {
@@ -43,6 +49,15 @@ public class TokenVo {
         this.color1 = tokenEntity.getColor1();
         this.color2 = tokenEntity.getColor2();
         this.color3 = tokenEntity.getColor3();
+        this.form = tokenEntity.getForm();
+        if (tokenEntity.getAttribute() != null) {
+            this.attribute = tokenEntity.getAttribute().getKor();
+        }
+        if (tokenEntity.getTypes() != null && !tokenEntity.getTypes().isEmpty()) {
+            this.types = Arrays.asList(tokenEntity.getTypes().split(","));
+        } else {
+            this.types = null;
+        }
 
         localeCardData = new ArrayList<>();
 

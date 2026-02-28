@@ -1,7 +1,9 @@
 package com.joo.digimon.card.model;
 
+import com.joo.digimon.global.enums.Attribute;
 import com.joo.digimon.global.enums.CardType;
 import com.joo.digimon.global.enums.Color;
+import com.joo.digimon.global.enums.Form;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,6 +34,15 @@ public class TokenEntity {
     Color color2;
     @Enumerated(EnumType.STRING)
     Color color3;
+
+    @Enumerated(EnumType.STRING)
+    Form form;
+
+    @Enumerated(EnumType.STRING)
+    Attribute attribute;
+
+    @Column(columnDefinition = "TEXT")
+    String types;
 
     String korName;
     String engName;
@@ -74,6 +85,18 @@ public class TokenEntity {
         this.color1 = color1;
         this.color2 = color2;
         this.color3 = color3;
+    }
+
+    public void updateForm(Form form) {
+        this.form = form;
+    }
+
+    public void updateAttribute(Attribute attribute) {
+        this.attribute = attribute;
+    }
+
+    public void updateTypes(String types) {
+        this.types = types;
     }
 
     public void updateKorName(String korName) {
