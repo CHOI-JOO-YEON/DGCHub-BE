@@ -90,6 +90,7 @@ public class CardAdminServiceImpl implements CardAdminService {
     private final EntityManager entityManager;
     private final ObjectMapper objectMapper;
     private final S3Util s3Util;
+    private final TokenAdminService tokenAdminService;
 
 
     @Override
@@ -191,6 +192,9 @@ public class CardAdminServiceImpl implements CardAdminService {
             NoteEntity noteEntity = noteRepository.findById(cardAdminPutDto.getNoteId()).orElseThrow();
             cardImgEntity.updateNote(noteEntity);
             updateType(cardAdminPutDto, cardImgEntity);
+            if (cardAdminPutDto.getTokens() != null) {
+                cardImgEntity.getCardEntity().updateTokens(cardAdminPutDto.getTokens());
+            }
         }
     }
 
@@ -442,11 +446,18 @@ public class CardAdminServiceImpl implements CardAdminService {
                 writer.write(getNotesJson());
             }
 
+            // Write tokens.{timestamp}.json
+            File tokensFile = new File(dataPath + "/tokens." + timestamp + ".json");
+            try (FileWriter writer = new FileWriter(tokensFile, false)) {
+                writer.write(tokenAdminService.getTokensJson());
+            }
+
             // Write version.json to web directory (no-cache asset)
             File versionFile = new File(webPath + "/version.json");
             try (FileWriter writer = new FileWriter(versionFile, false)) {
                 String versionJson = String.format(
-                        "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\"\n}",
+                        "{\n  \"cards\": \"%s\",\n  \"notes\": \"%s\",\n  \"tokens\": \"%s\"\n}",
+                        timestamp,
                         timestamp,
                         timestamp
                 );

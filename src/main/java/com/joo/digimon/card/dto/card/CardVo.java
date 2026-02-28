@@ -44,6 +44,7 @@ public class CardVo {
     Boolean isEn;
     LocalDateTime modifiedAt;
     List<LocaleCardData> localeCardData;
+    List<String> tokens;
 
     public CardVo(CardImgEntity card, String prefixUrl) {
         this.cardId = card.getId();
@@ -82,6 +83,9 @@ public class CardVo {
         
         this.modifiedAt = card.getModifiedAt() == null ?
                 LocalDateTime.of(1998, 7, 15, 9, 30) : card.getModifiedAt();
+
+        List<String> t = card.getCardEntity().getTokens();
+        this.tokens = (t != null && !t.isEmpty()) ? t : null;
 
         localeCardData = new ArrayList<>();
 

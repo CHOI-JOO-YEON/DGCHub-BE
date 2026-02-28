@@ -46,5 +46,6 @@ public class CardAdminPutDto {
     Integer noteId;
     LocalDate releaseDate;
     Locale sampleImageLocale;
+    List<String> tokens;
 //    Boolean isEn;
 }

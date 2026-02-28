@@ -1,5 +1,6 @@
 package com.joo.digimon.card.model;
 
+import com.joo.digimon.card.converter.TokensConverter;
 import com.joo.digimon.crawling.dto.ReflectCardRequestDto;
 import com.joo.digimon.global.enums.*;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -65,6 +67,10 @@ public class CardEntity {
     LocalDate releaseDate;
 
     Boolean isOnlyEnCard;
+
+    @Convert(converter = TokensConverter.class)
+    @Column(columnDefinition = "TEXT")
+    List<String> tokens;
 
     @OneToOne(mappedBy = "cardEntity")
     EnglishCardEntity englishCard;
@@ -131,5 +137,9 @@ public class CardEntity {
 
     public void updateReleaseDate(LocalDate releaseDate) {
         this.releaseDate = releaseDate;
+    }
+
+    public void updateTokens(List<String> tokens) {
+        this.tokens = tokens;
     }
 }
