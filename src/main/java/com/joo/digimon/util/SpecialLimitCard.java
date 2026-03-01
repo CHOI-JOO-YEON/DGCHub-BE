@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class SpecialLimitCard {
 
-    private static Map<String,Integer> cardMap;
+    private static final Map<String,Integer> cardMap;
 
     static {
         cardMap = new HashMap<>();
@@ -17,6 +17,7 @@ public class SpecialLimitCard {
         cardMap.put("BT11-061", 50);
         cardMap.put("EX9-048", 50);
         cardMap.put("BT22-079", 50);
+        cardMap.put("EX11-027", 50);
     }
     public static int getCardLimit(String cardNo){
         if (cardMap.containsKey(cardNo)) {
